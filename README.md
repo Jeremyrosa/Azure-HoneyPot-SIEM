@@ -44,7 +44,6 @@ The cloud infrastructure funnels untrusted network traffic from perimeter bounda
 A target Virtual Machine (`NET-CORP-1`) running Windows 11 was provisioned within the virtual network `VNET-SOC-LAB`. To facilitate rapid discovery by automated internet scanners, the inbound Network Security Group (`NET-CORP-1-nsg`) firewall policies were opened explicitly on management Port 3389 (RDP) to receive traffic from any public external source IP address. 
 
 To ensure perimeter traffic could reach deep enough into the operating system stack to register authentication telemetry, the internal Windows Defender Firewall configuration windows were administrative deactivated for Domain, Private, and Public network profiles (`wf.msc`).
-![Uploading Screenshot 2026-06-16 at 10.16.54 AM.png…]()
 
 <img width="350" height="600" alt="Screenshot 2026-06-16 at 10 04 51 AM" src="https://github.com/user-attachments/assets/3aa955de-99d3-4178-9aef-cc0a4623e0e6" />
  <img width="600" height="200" alt="Screenshot 2026-06-16 at 10 03 49 AM" src="https://github.com/user-attachments/assets/bdc2089c-8239-477a-89fc-aea3d5f85cb7" />
@@ -67,8 +66,11 @@ Raw authentication event logs natively track an adversary's public IP address bu
 
 <img width="488" height="980" alt="Screenshot 2026-06-16 at 10 23 31 AM" src="https://github.com/user-attachments/assets/0f7a2da2-3c92-4951-b683-9989d18fcb5f" />
 
+### GeoIP Watchlist Dataset
 
-Link to sheets
+The GeoIP watchlist used in this project can be downloaded below:
+
+[GeoIP CSV Dataset](https://drive.google.com/file/d/13EfjM_4BohrmaxqXZLB5VUBIz2sv9Siz/view)
 
 ### Phase 4: Constructing Relational Queries & Normalizing JSON Blobs
 Data streams inside Microsoft Sentinel watchlists package secondary identifiers into a dense, nested string object (`WatchlistItems`). To extract these fields without destroying database efficiency, a custom Kusto Query Language (KQL) rule was written using the native `evaluate ipv4_lookup` join plugin. 
@@ -94,8 +96,49 @@ SecurityEvent
 ```
 ---
 
-## 📊 Phase 5: Microsoft Sentinel Attack Map Workbook Orchestration
+## Phase 5: Microsoft Sentinel Attack Map Workbook Orchestration
 To transform raw database query logs into a functional, executive-ready security asset, a custom Azure Workbook (`AttackMapWorkbook`) was constructed. By initializing an interactive map layout widget, the spatial latitude and longitude coordinate vectors parsed out by our KQL query are actively mapped to pinpoint attacker locations globally in real time.
+
+###  Microsoft Sentinel Workbook Configuration Code
+The complete infrastructure template used to build out this map interface can be reviewed below. To deploy this yourself, open an empty Azure Workbook, activate the **Advanced Editor** (`</>`), and paste this entire configuration block:
+
+```json
+{
+	"type": 3,
+	"content": {
+	"version": "KqlItem/1.0",
+	"query": "let GeoIPDB_FULL = _GetWatchlist(\"geoip\");\nlet WindowsEvents = SecurityEvent;\nWindowsEvents | where EventID == 4625\n| order by TimeGenerated desc\n| evaluate ipv4_lookup(GeoIPDB_FULL, IpAddress, network)\n| summarize FailureCount = count() by IpAddress, latitude, longitude, cityname, countryname\n| project FailureCount, AttackerIp = IpAddress, latitude, longitude, city = cityname, country = countryname,\nfriendly_location = strcat(cityname, \" (\", countryname, \")\");",
+	"size": 3,
+	"timeContext": {
+		"durationMs": 2592000000
+	},
+	"queryType": 0,
+	"resourceType": "microsoft.operationalinsights/workspaces",
+	"visualization": "map",
+	"mapSettings": {
+		"locInfo": "LatLong",
+		"locInfoColumn": "countryname",
+		"latitude": "latitude",
+		"longitude": "longitude",
+		"sizeSettings": "FailureCount",
+		"sizeAggregation": "Sum",
+		"opacity": 0.8,
+		"labelSettings": "friendly_location",
+		"legendMetric": "FailureCount",
+		"legendAggregation": "Sum",
+		"itemColorSettings": {
+		"nodeColorField": "FailureCount",
+		"colorAggregation": "Sum",
+		"type": "heatmap",
+		"heatmapPalette": "greenRed"
+		}
+	}
+	},
+	"name": "query - 0"
+}
+```
+
+
 
 <img width="1252" height="704" alt="Screenshot 2026-06-16 at 10 31 37 AM" src="https://github.com/user-attachments/assets/bf686347-8264-4c2e-84c1-b24701818320" />
 *(Image Above: Real-time global threat visualization workbook mapping automated protocol sweeps by country, city, and spatial tracking vectors.)*
