@@ -55,7 +55,7 @@ Rather than running legacy unmanaged parsing mechanisms, the system relies on mo
 
 A centralized policy rule, `DataCollectionRuleDCR-Windows`, was configured in the Azure portal. This rule dictates the exact scoping parameters for log streaming, instructing the internal AMA extension to capture all local event logs and continuously stream them into `LogAnalyticsWorkspace-SocLab`. Our primary indicator of malicious discovery centers on **Windows Event ID 4625** (Audit Failure - Logon Attempt).
 
- **[INSERT SCREENSHOT 2 HERE]**
+
  <img width="1000" height="350" alt="Screenshot 2026-06-16 at 10 17 27 AM" src="https://github.com/user-attachments/assets/e4ef5fd3-d6b1-43b2-89d1-6515e49cce34" />
  <img width="1000" height="300" alt="Screenshot 2026-06-16 at 10 18 45 AM" src="https://github.com/user-attachments/assets/2c388baf-20ec-4960-b63e-93b2a964cfb9" />
  <img width="1000" height="600" alt="Screenshot 2026-06-16 at 10 19 25 AM" src="https://github.com/user-attachments/assets/0acbc2b9-c22e-47ea-9907-b9e790d29f7c" />
