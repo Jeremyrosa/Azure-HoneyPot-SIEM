@@ -38,6 +38,13 @@ The cloud infrastructure funnels untrusted network traffic from perimeter bounda
 
 ---
 
+## Telemetry Pipeline Logical Layout
+To map the active processing states within the SIEM instance, I constructed a logical dependency map matching the data transformation loop. The structural graph visualizes how incoming raw tables flow cleanly from schema definition queries straight into mapping layouts.
+
+<img width="985" height="717" alt="Screenshot 2026-06-17 at 9 43 46 AM" src="https://github.com/user-attachments/assets/ace0e88c-4760-44b9-802f-5cc6564764e7" />
+
+---
+
 ##  Configuration & Implementation Walkthrough
 
 ### Phase 1: Deploying Target Assets & Establishing the Exposure Baseline
